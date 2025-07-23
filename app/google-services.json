@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "443989556768",
+    "firebase_url": "https://universalyogaapps-fb6fa-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "universalyogaapps-fb6fa",
+    "storage_bucket": "universalyogaapps-fb6fa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:443989556768:android:748c4627bbba210c170645",
+        "android_client_info": {
+          "package_name": "com.example.comp1786_universalyogaapps"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxoKCqxHglD3nxwPfRoxtG9kff6hRXkqY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:443989556768:android:ca436b493e110828170645",
+        "android_client_info": {
+          "package_name": "com.example.universalyogaapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxoKCqxHglD3nxwPfRoxtG9kff6hRXkqY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
