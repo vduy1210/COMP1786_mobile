@@ -27,6 +27,13 @@ import androidx.room.Room;
 import com.example.universalyogaapp.db.AppDatabase;
 import com.example.universalyogaapp.dao.CourseDao;
 import com.example.universalyogaapp.db.CourseEntity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.example.universalyogaapp.model.ClassInstance;
+import java.util.ArrayList;
+import java.util.List;
+import com.example.universalyogaapp.ui.course.ClassInstanceAdapter;
+import com.example.universalyogaapp.dao.ClassInstanceDao;
 
 public class CourseDetailActivity extends AppCompatActivity {
     private TextView textViewName, textViewSchedule, textViewTime, textViewTeacher, textViewCapacity, textViewPrice, textViewDuration, textViewDescription, textViewNote;
@@ -35,6 +42,11 @@ public class CourseDetailActivity extends AppCompatActivity {
     private FirebaseManager firebaseManager;
     private String courseId;
     private AppDatabase db;
+    private RecyclerView recyclerViewClassInstances;
+    private ClassInstanceAdapter classInstanceAdapter;
+    private Button buttonAddClassInstance;
+    private List<ClassInstance> classInstanceList = new ArrayList<>();
+    private String courseSchedule; // Store course schedule to pass to add/edit screen
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -59,6 +71,8 @@ public class CourseDetailActivity extends AppCompatActivity {
         textViewNote = findViewById(R.id.textViewNote);
         buttonEdit = findViewById(R.id.buttonEdit);
         buttonDelete = findViewById(R.id.buttonDelete);
+        recyclerViewClassInstances = findViewById(R.id.recyclerViewClassInstances);
+        buttonAddClassInstance = findViewById(R.id.buttonAddClassInstance);
 
         firebaseManager = new FirebaseManager();
 
@@ -82,23 +96,96 @@ public class CourseDetailActivity extends AppCompatActivity {
                 confirmDelete();
             }
         });
+        classInstanceAdapter = new ClassInstanceAdapter(classInstanceList, new ClassInstanceAdapter.OnInstanceActionListener() {
+            @Override
+            public void onEdit(ClassInstance instance) {
+                Intent intent = new Intent(CourseDetailActivity.this, AddEditClassInstanceActivity.class);
+                intent.putExtra("course_id", courseId);
+                intent.putExtra("course_schedule", courseSchedule);
+                intent.putExtra("class_instance", instance);
+                startActivity(intent);
+            }
+            @Override
+            public void onDelete(ClassInstance instance) {
+                confirmDeleteInstance(instance);
+            }
+        });
+        recyclerViewClassInstances.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewClassInstances.setAdapter(classInstanceAdapter);
+        buttonAddClassInstance.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CourseDetailActivity.this, AddEditClassInstanceActivity.class);
+                intent.putExtra("course_id", courseId);
+                intent.putExtra("course_schedule", courseSchedule);
+                startActivity(intent);
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (course != null) {
+            loadClassInstances(course.getId());
+        } else if (courseId != null) {
+            loadClassInstances(courseId);
+        }
     }
 
     private void loadCourse(String id) {
         firebaseManager.getCourseById(id, new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                course = snapshot.getValue(Course.class);
+                Integer capacityObj = snapshot.child("capacity").getValue(Integer.class);
+                int capacity = capacityObj != null ? capacityObj : 0;
+                Double priceObj = snapshot.child("price").getValue(Double.class);
+                double price = priceObj != null ? priceObj : 0.0;
+                Integer durationObj = snapshot.child("duration").getValue(Integer.class);
+                int duration = durationObj != null ? durationObj : 0;
+                com.example.universalyogaapp.model.Course course = new com.example.universalyogaapp.model.Course(
+                    snapshot.getKey(),
+                    snapshot.child("name").getValue(String.class),
+                    snapshot.child("schedule").getValue(String.class),
+                    snapshot.child("time").getValue(String.class),
+                    snapshot.child("teacher").getValue(String.class),
+                    capacity,
+                    price,
+                    duration,
+                    snapshot.child("description").getValue(String.class),
+                    snapshot.child("note").getValue(String.class),
+                    snapshot.child("upcomingDate").getValue(String.class),
+                    0 // hoặc 0 nếu không có
+                );
                 if (course != null) {
                     course.setId(snapshot.getKey());
+                    course.setLocalId(0); // When getting from Firebase, localId doesn't exist, set 0
                     showCourseInfo(course);
+                    loadClassInstances(course.getId());
                 }
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(CourseDetailActivity.this, "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CourseDetailActivity.this, "Error loading data", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void loadClassInstances(String courseId) {
+        classInstanceList.clear();
+        List<com.example.universalyogaapp.db.ClassInstanceEntity> entities = db.classInstanceDao().getInstancesForCourse(courseId);
+        for (com.example.universalyogaapp.db.ClassInstanceEntity entity : entities) {
+            com.example.universalyogaapp.model.ClassInstance instance = new com.example.universalyogaapp.model.ClassInstance(
+                entity.firebaseId,
+                entity.courseId,
+                entity.date,
+                entity.teacher,
+                entity.note,
+                entity.id // truyền localId từ entity
+            );
+            classInstanceList.add(instance);
+        }
+        classInstanceAdapter.setInstanceList(new ArrayList<>(classInstanceList));
     }
 
     private void showCourseInfo(Course course) {
@@ -117,6 +204,8 @@ public class CourseDetailActivity extends AppCompatActivity {
         } else {
             textViewNote.setVisibility(View.GONE);
         }
+                    // Store schedule to pass
+        courseSchedule = course.getSchedule();
     }
 
     private void confirmDelete() {
@@ -135,17 +224,54 @@ public class CourseDetailActivity extends AppCompatActivity {
 
     private void deleteCourse() {
         if (courseId == null) return;
-        firebaseManager.deleteCourse(courseId, new DatabaseReference.CompletionListener() {
+                    // Delete ClassInstances on Firebase first
+        firebaseManager.deleteClassInstancesByCourseId(courseId, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError error, DatabaseReference ref) {
+                // After deleting instances, delete Course
+                firebaseManager.deleteCourse(courseId, new DatabaseReference.CompletionListener() {
+                    @Override
+                    public void onComplete(DatabaseError error, DatabaseReference ref) {
+                        if (error == null) {
+                            // Delete local in Room after successful cloud deletion
+                            db.courseDao().deleteByFirebaseId(courseId);
+                            // Delete local instances
+                            db.classInstanceDao().getInstancesForCourse(courseId).forEach(entity -> {
+                                db.classInstanceDao().delete(entity);
+                            });
+                            Toast.makeText(CourseDetailActivity.this, "Course and related class instances deleted successfully", Toast.LENGTH_SHORT).show();
+                            finish();
+                        } else {
+                            Toast.makeText(CourseDetailActivity.this, "Error deleting course", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void confirmDeleteInstance(ClassInstance instance) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Class Session")
+                .setMessage("Are you sure you want to delete this class session?")
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteClassInstance(instance);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void deleteClassInstance(ClassInstance instance) {
+        firebaseManager.deleteClassInstance(instance.getId(), new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError error, DatabaseReference ref) {
                 if (error == null) {
-                    // Xóa local trong Room sau khi xóa cloud thành công
-                    db.courseDao().deleteByFirebaseId(courseId);
-
-                    Toast.makeText(CourseDetailActivity.this, "Đã xóa lớp học", Toast.LENGTH_SHORT).show();
-                    finish();
+                    Toast.makeText(CourseDetailActivity.this, "Class instance deleted successfully", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(CourseDetailActivity.this, "Lỗi khi xóa lớp học", Toast.LENGTH_SHORT).show();
+                                          Toast.makeText(CourseDetailActivity.this, "Error deleting class instance", Toast.LENGTH_SHORT).show();
                 }
             }
         });

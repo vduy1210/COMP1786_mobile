@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/nav_dashboard"
-        android:icon="@android:drawable/ic_menu_view"
-        android:title="Dashboard" />
+        android:id="@+id/nav_admin"
+        android:icon="@drawable/ic_admin"
+        android:title="@string/admin" />
+    
     <item
-        android:id="@+id/nav_course"
-        android:icon="@android:drawable/ic_menu_agenda"
-        android:title="Lớp học" />
-    <item
-        android:id="@+id/nav_revenue"
-        android:icon="@android:drawable/ic_menu_info_details"
-        android:title="Doanh thu" />
+        android:id="@+id/nav_courses"
+        android:icon="@drawable/ic_course"
+        android:title="@string/courses" />
 </menu> 

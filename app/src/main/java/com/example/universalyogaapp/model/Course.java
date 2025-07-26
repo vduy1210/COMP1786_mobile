@@ -12,11 +12,12 @@ public class Course {
     private String note;     // Additional note
     private String time;     // Class time
     private String upcomingDate; // Calculated upcoming date
+    private int localId;
 
     // Empty constructor for Firebase
     public Course() {}
 
-    public Course(String id, String name, String schedule, String time, String teacher, int capacity, double price, int duration, String description, String note, String upcomingDate) {
+    public Course(String id, String name, String schedule, String time, String teacher, int capacity, double price, int duration, String description, String note, String upcomingDate, int localId) {
         this.id = id;
         this.name = name;
         this.schedule = schedule;
@@ -28,6 +29,7 @@ public class Course {
         this.description = description;
         this.note = note;
         this.upcomingDate = upcomingDate;
+        this.localId = localId;
     }
 
     public String getId() { return id; }
@@ -52,4 +54,6 @@ public class Course {
     public void setTime(String time) { this.time = time; }
     public String getUpcomingDate() { return upcomingDate; }
     public void setUpcomingDate(String upcomingDate) { this.upcomingDate = upcomingDate; }
+    public int getLocalId() { return localId; }
+    public void setLocalId(int localId) { this.localId = localId; }
 } 

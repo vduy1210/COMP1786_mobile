@@ -10,6 +10,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
 
 import com.example.universalyogaapp.R;
 import com.example.universalyogaapp.firebase.FirebaseManager;
@@ -30,6 +31,8 @@ import java.util.stream.Collectors;
 import androidx.room.Room;
 import com.example.universalyogaapp.db.AppDatabase;
 import com.example.universalyogaapp.db.CourseEntity;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 public class AddEditCourseActivity extends AppCompatActivity {
     private TextInputEditText editTextName, editTextTime, editTextTeacher, editTextCapacity, editTextPrice, editTextDuration, editTextDescription, editTextNote;
@@ -50,7 +53,7 @@ public class AddEditCourseActivity extends AppCompatActivity {
             AppDatabase.class,
             "yoga-db"
         ).allowMainThreadQueries()
-         .fallbackToDestructiveMigration() // Thêm dòng này!
+                         .fallbackToDestructiveMigration() // Add this line!
         .build();
 
         editTextName = findViewById(R.id.editTextName);
@@ -91,7 +94,7 @@ public class AddEditCourseActivity extends AppCompatActivity {
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveCourse();
+                showConfirmDialog();
             }
         });
     }
@@ -137,20 +140,21 @@ public class AddEditCourseActivity extends AppCompatActivity {
         editTextNote.setText(course.getNote());
     }
 
-    private void saveCourse() {
-        String name = editTextName.getText().toString().trim();
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
 
-        // Get selected days from ChipGroup
+    private void showConfirmDialog() {
+        String name = editTextName.getText().toString().trim();
         List<String> selectedChips = new java.util.ArrayList<>();
         for (int id : chipGroupSchedule.getCheckedChipIds()) {
             Chip chip = chipGroupSchedule.findViewById(id);
             selectedChips.add(chip.getText().toString());
         }
         String schedule = String.join(",", selectedChips);
-
-        // Calculate upcoming date
         String upcomingDate = DateUtils.getNextUpcomingDate(schedule);
-
         String time = editTextTime.getText().toString().trim();
         String teacher = editTextTeacher.getText().toString().trim();
         String capacityStr = editTextCapacity.getText().toString().trim();
@@ -158,81 +162,160 @@ public class AddEditCourseActivity extends AppCompatActivity {
         String durationStr = editTextDuration.getText().toString().trim();
         String description = editTextDescription.getText().toString().trim();
         String note = editTextNote.getText().toString().trim();
-
         if (TextUtils.isEmpty(name) || TextUtils.isEmpty(schedule) || TextUtils.isEmpty(teacher) ||
                 TextUtils.isEmpty(capacityStr) || TextUtils.isEmpty(priceStr) ||
                 TextUtils.isEmpty(durationStr)) {
             Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
             return;
         }
+        StringBuilder message = new StringBuilder();
+        message.append("Name: ").append(name).append("\n");
+        message.append("Schedule: ").append(schedule).append("\n");
+        message.append("Time: ").append(time).append("\n");
+        message.append("Teacher: ").append(teacher).append("\n");
+        message.append("Capacity: ").append(capacityStr).append("\n");
+        message.append("Price: ").append(priceStr).append("\n");
+        message.append("Duration: ").append(durationStr).append("\n");
+        message.append("Description: ").append(description).append("\n");
+        message.append("Note: ").append(note).append("\n");
+        new AlertDialog.Builder(this)
+            .setTitle("Confirm Course Details")
+            .setMessage(message.toString())
+            .setPositiveButton("Confirm", (dialog, which) -> saveCourse())
+            .setNegativeButton("Edit", null)
+            .show();
+    }
 
+    private void saveCourse() {
+        String name = editTextName.getText().toString().trim();
+        List<String> selectedChips = new java.util.ArrayList<>();
+        for (int id : chipGroupSchedule.getCheckedChipIds()) {
+            Chip chip = chipGroupSchedule.findViewById(id);
+            selectedChips.add(chip.getText().toString());
+        }
+        String schedule = String.join(",", selectedChips);
+        String upcomingDate = DateUtils.getNextUpcomingDate(schedule);
+        String time = editTextTime.getText().toString().trim();
+        String teacher = editTextTeacher.getText().toString().trim();
+        String capacityStr = editTextCapacity.getText().toString().trim();
+        String priceStr = editTextPrice.getText().toString().trim();
+        String durationStr = editTextDuration.getText().toString().trim();
+        String description = editTextDescription.getText().toString().trim();
+        String note = editTextNote.getText().toString().trim();
         int capacity = Integer.parseInt(capacityStr);
         double price = Double.parseDouble(priceStr);
         int duration = Integer.parseInt(durationStr);
 
-        // Sau khi lấy dữ liệu từ form:
-        CourseEntity entity = new CourseEntity();
-        entity.name = name;
-        entity.schedule = schedule;
-        entity.time = time;
-        entity.teacher = teacher;
-        entity.capacity = capacity;
-        entity.price = price;
-        entity.duration = duration;
-        entity.description = description;
-        entity.note = note;
-        entity.upcomingDate = upcomingDate;
-        entity.isSynced = false; // Đánh dấu là chưa sync
-
-        // Lưu vào Room
-        long localId = db.courseDao().insert(entity);
-
-        if (courseId == null) {
-            // Add new
-            Course course = new Course(null, name, schedule, time, teacher, capacity, price, duration, description, note, upcomingDate);
-            firebaseManager.addCourse(course, new DatabaseReference.CompletionListener() {
-                @Override
-                public void onComplete(DatabaseError error, DatabaseReference ref) {
+        if (editingCourse != null) {
+            // EDITING EXISTING COURSE
+            Course course = new Course(
+                editingCourse.getId(), name, schedule, time, teacher,
+                capacity, price, duration, description, note, upcomingDate, editingCourse.getLocalId()
+            );
+            
+            if (isNetworkAvailable()) {
+                // ONLINE: Update Firebase first, then local
+                DatabaseReference.CompletionListener listener = (error, ref) -> {
                     if (error == null) {
-                        // Lấy firebaseId vừa tạo
-                        String firebaseId = ref.getKey();
-                        // Cập nhật lại bản ghi local với firebaseId và trạng thái đã sync
-                        entity.firebaseId = firebaseId;
+                        // Update local database
+                        CourseEntity entity = new CourseEntity();
+                        entity.localId = editingCourse.getLocalId();
+                        entity.firebaseId = editingCourse.getId();
+                        entity.name = name;
+                        entity.schedule = schedule;
+                        entity.time = time;
+                        entity.teacher = teacher;
+                        entity.capacity = capacity;
+                        entity.price = price;
+                        entity.duration = duration;
+                        entity.description = description;
+                        entity.note = note;
+                        entity.upcomingDate = upcomingDate;
                         entity.isSynced = true;
-                        entity.localId = (int)localId; // Gán lại localId để Room biết update đúng bản ghi
-                        db.courseDao().update(entity); // Update lại bản ghi local
-
-                        Toast.makeText(AddEditCourseActivity.this, "Course added", Toast.LENGTH_SHORT).show();
-                        finish();
+                        
+                        db.courseDao().update(entity);
+                        runOnUiThread(() -> {
+                            Toast.makeText(AddEditCourseActivity.this, "Course updated and synced!", Toast.LENGTH_SHORT).show();
+                            finish();
+                        });
                     } else {
-                        Toast.makeText(AddEditCourseActivity.this, "Error adding course", Toast.LENGTH_SHORT).show();
+                        runOnUiThread(() -> {
+                            Toast.makeText(AddEditCourseActivity.this, "Failed to sync with server, saved locally.", Toast.LENGTH_SHORT).show();
+                            finish();
+                        });
                     }
-                }
-            });
+                };
+                firebaseManager.updateCourse(course, listener);
+            } else {
+                // OFFLINE: Update local only
+                CourseEntity entity = new CourseEntity();
+                entity.localId = editingCourse.getLocalId();
+                entity.firebaseId = editingCourse.getId();
+                entity.name = name;
+                entity.schedule = schedule;
+                entity.time = time;
+                entity.teacher = teacher;
+                entity.capacity = capacity;
+                entity.price = price;
+                entity.duration = duration;
+                entity.description = description;
+                entity.note = note;
+                entity.upcomingDate = upcomingDate;
+                entity.isSynced = false;
+                
+                db.courseDao().update(entity);
+                Toast.makeText(AddEditCourseActivity.this, "Course updated locally. Please sync to upload.", Toast.LENGTH_SHORT).show();
+                finish();
+            }
         } else {
-            // Edit
-            if (editingCourse == null) return;
-            editingCourse.setName(name);
-            editingCourse.setSchedule(schedule);
-            editingCourse.setUpcomingDate(upcomingDate);
-            editingCourse.setTime(time);
-            editingCourse.setTeacher(teacher);
-            editingCourse.setCapacity(capacity);
-            editingCourse.setPrice(price);
-            editingCourse.setDuration(duration);
-            editingCourse.setDescription(description);
-            editingCourse.setNote(note);
-            firebaseManager.updateCourse(editingCourse, new DatabaseReference.CompletionListener() {
-                @Override
-                public void onComplete(DatabaseError error, DatabaseReference ref) {
+            // CREATING NEW COURSE
+            CourseEntity entity = new CourseEntity();
+            entity.name = name;
+            entity.schedule = schedule;
+            entity.time = time;
+            entity.teacher = teacher;
+            entity.capacity = capacity;
+            entity.price = price;
+            entity.duration = duration;
+            entity.description = description;
+            entity.note = note;
+            entity.upcomingDate = upcomingDate;
+            
+            if (isNetworkAvailable()) {
+                // ONLINE: Lưu local với isSynced=true, đẩy lên Firebase
+                entity.isSynced = true;
+                long localId = db.courseDao().insert(entity);
+                Course course = new Course(
+                    entity.firebaseId, entity.name, entity.schedule, entity.time, entity.teacher,
+                    entity.capacity, entity.price, entity.duration, entity.description, entity.note, entity.upcomingDate, entity.localId
+                );
+                DatabaseReference.CompletionListener listener = (error, ref) -> {
                     if (error == null) {
-                        Toast.makeText(AddEditCourseActivity.this, "Course updated", Toast.LENGTH_SHORT).show();
-                        finish();
+                        db.courseDao().markCourseAsSynced((int) localId, ref.getKey());
+                        runOnUiThread(() -> {
+                            Toast.makeText(AddEditCourseActivity.this, "Course saved and synced!", Toast.LENGTH_SHORT).show();
+                            finish();
+                        });
                     } else {
-                        Toast.makeText(AddEditCourseActivity.this, "Error updating course", Toast.LENGTH_SHORT).show();
+                        runOnUiThread(() -> {
+                            Toast.makeText(AddEditCourseActivity.this, "Failed to sync with server, saved locally.", Toast.LENGTH_SHORT).show();
+                            finish();
+                        });
                     }
+                };
+                if (entity.firebaseId == null || entity.firebaseId.isEmpty()) {
+                    firebaseManager.addCourse(course, listener);
+                } else {
+                    course.setId(entity.firebaseId);
+                    firebaseManager.updateCourse(course, listener);
                 }
-            });
+            } else {
+                // OFFLINE: Lưu local với isSynced=false
+                entity.isSynced = false;
+                db.courseDao().insert(entity);
+                Toast.makeText(AddEditCourseActivity.this, "Course saved locally. Please sync to upload.", Toast.LENGTH_SHORT).show();
+                finish();
+            }
         }
     }
 

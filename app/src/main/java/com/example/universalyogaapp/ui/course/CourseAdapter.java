@@ -58,7 +58,7 @@ public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.CourseView
                 }
                 sb.append(", ");
             }
-            if (sb.length() > 2) sb.setLength(sb.length() - 2); // Xóa dấu phẩy cuối
+            if (sb.length() > 2) sb.setLength(sb.length() - 2); // Remove trailing comma
             shortSchedule = sb.toString();
         }
         holder.textViewSchedule.setText(shortSchedule);

@@ -1,3 +1,83 @@
 <resources>
     <string name="app_name">UniversalYogaApp</string>
+    
+    <!-- Login/Register -->
+    <string name="app_logo">App Logo</string>
+    <string name="welcome_back">Welcome Back</string>
+    <string name="login_to_continue">Login to continue</string>
+    <string name="create_account">Create Account</string>
+    <string name="join_us_today">Join us today</string>
+    <string name="username">Username</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="full_name">Full Name</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+    <string name="register_now">Register Now</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="login_now">Login Now</string>
+    
+    <!-- Profile -->
+    <string name="profile">Profile</string>
+    <string name="profile_picture">Profile Picture</string>
+    <string name="user_name">User Name</string>
+    <string name="user_email">user@example.com</string>
+    <string name="user_full_name">User Full Name</string>
+    <string name="user_phone">User Phone</string>
+    <string name="personal_information">Personal Information</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="logout">Logout</string>
+    
+    <!-- Messages -->
+    <string name="login_successful">Login successful</string>
+    <string name="login_failed">Login failed</string>
+    <string name="registration_successful">Registration successful</string>
+    <string name="registration_failed">Registration failed</string>
+    <string name="passwords_dont_match">Passwords don\'t match</string>
+    <string name="please_fill_all_fields">Please fill all fields</string>
+    <string name="invalid_email">Invalid email format</string>
+    <string name="password_too_short">Password must be at least 6 characters</string>
+    <string name="logout_successful">Logout successful</string>
+    <string name="welcome_message">Welcome to Yoga App</string>
+    <string name="manage_courses">Manage Courses</string>
+    
+    <!-- Navigation -->
+    <string name="admin">Admin</string>
+    <string name="courses">Courses</string>
+    
+    <!-- Admin Fragment -->
+    <string name="admin_icon">Admin Icon</string>
+    <string name="admin_panel">Admin Panel</string>
+    <string name="database_management">Database Management</string>
+    <string name="sync_data">Sync Data</string>
+    <string name="reset_database">Reset Database</string>
+    
+    <!-- Course Manager Fragment -->
+    <string name="course_icon">Course Icon</string>
+    <string name="course_management">Course Management</string>
+    <string name="manage_your_courses">Manage your courses and class instances</string>
+    <string name="course_operations">Course Operations</string>
+    <string name="course_management_description">Add, edit, and manage your yoga courses and class schedules</string>
+    
+    <!-- Course List Activity -->
+    <string name="statistics">Statistics</string>
+    <string name="classes">Classes</string>
+    <string name="students">Students</string>
+    <string name="total_revenue">Total Revenue</string>
+    <string name="search_courses">Search Courses</string>
+    <string name="search_hint">Search by name, teacher, or schedule...</string>
+    <string name="courses_list">Courses List</string>
+    <string name="add_course">Add Course</string>
+    
+    <!-- Course Detail Activity -->
+    <string name="course_details">Course Details</string>
+    <string name="schedule_instructor">Schedule &amp; Instructor</string>
+    <string name="class_details">Class Details</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="class_sessions">Class Sessions</string>
+    <string name="add_session">Add Session</string>
 </resources>

@@ -23,4 +23,9 @@ public interface CourseDao {
     @Query("DELETE FROM courses WHERE firebaseId = :firebaseId")
     void deleteByFirebaseId(String firebaseId);
 
+    @Query("DELETE FROM courses")
+    void deleteAllCourses();
+
+    @Query("UPDATE courses SET isSynced = 1, firebaseId = :firebaseId WHERE localId = :localId")
+    void markCourseAsSynced(int localId, String firebaseId);
 }
