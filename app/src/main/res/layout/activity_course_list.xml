@@ -219,6 +219,19 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonAllClassInstances"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="All Class Sessions"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="28dp"
+                app:icon="@drawable/ic_today"
+                app:iconGravity="textStart"
+                android:layout_marginBottom="8dp" />
+
             <!-- Sync Data Button at Bottom -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonSync"

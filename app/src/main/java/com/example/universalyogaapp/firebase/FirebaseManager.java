@@ -11,6 +11,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class FirebaseManager {
+    public DatabaseReference getCourseRef() {
+        return courseRef;
+    }
+    public DatabaseReference getClassInstanceRef() {
+        return classInstanceRef;
+    }
     private final String DATABASE_URL = "https://universalyogaapps-fb6fa-default-rtdb.asia-southeast1.firebasedatabase.app/";
     private final FirebaseDatabase database;
     private final DatabaseReference courseRef;

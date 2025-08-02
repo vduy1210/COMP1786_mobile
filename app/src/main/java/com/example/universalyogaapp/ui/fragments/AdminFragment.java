@@ -57,7 +57,7 @@ public class AdminFragment extends Fragment {
             AppDatabase.class,
             "yoga-db"
         ).allowMainThreadQueries()
-         .fallbackToDestructiveMigration()
+         .addMigrations(AppDatabase.MIGRATION_5_6)
          .build();
     }
 
@@ -95,16 +95,22 @@ public class AdminFragment extends Fragment {
                 .setPositiveButton("Reset", (dialog, which) -> {
                     buttonResetDatabase.setEnabled(false);
                     buttonResetDatabase.setText("Resetting...");
-                    
+
                     // Perform reset in background
                     new Thread(() -> {
-                        // Clear all data
+                        // Clear all data in local database
                         db.courseDao().deleteAllCourses();
                         db.classInstanceDao().deleteAllInstances();
-                        
+
+                        // Clear all data in Firebase
+                        requireActivity().runOnUiThread(() -> {
+                            firebaseManager.getCourseRef().removeValue();
+                            firebaseManager.getClassInstanceRef().removeValue();
+                        });
+
                         // Update UI on main thread
                         requireActivity().runOnUiThread(() -> {
-                            Toast.makeText(requireContext(), "Database reset successfully", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(), "Database reset successfully (local & cloud)", Toast.LENGTH_SHORT).show();
                             buttonResetDatabase.setEnabled(true);
                             buttonResetDatabase.setText("Reset Database");
                         });

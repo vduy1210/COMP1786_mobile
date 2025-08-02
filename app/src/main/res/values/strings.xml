@@ -68,13 +68,13 @@
     <string name="students">Students</string>
     <string name="total_revenue">Total Revenue</string>
     <string name="search_courses">Search Courses</string>
-    <string name="search_hint">Search by name, teacher, or schedule...</string>
+    <string name="search_hint">Search by name or schedule...</string>
     <string name="courses_list">Courses List</string>
     <string name="add_course">Add Course</string>
     
     <!-- Course Detail Activity -->
     <string name="course_details">Course Details</string>
-    <string name="schedule_instructor">Schedule &amp; Instructor</string>
+    <string name="schedule_instructor">Schedule</string>
     <string name="class_details">Class Details</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>

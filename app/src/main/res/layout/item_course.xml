@@ -70,16 +70,7 @@
                 app:drawableStartCompat="@drawable/ic_time" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/textViewCourseTeacher"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:drawablePadding="8dp"
-            android:gravity="center_vertical"
-            android:text="Jane Doe"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            app:drawableStartCompat="@drawable/ic_teacher" />
+
 
     </LinearLayout>
 

@@ -11,12 +11,14 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.universalyogaapp.R;
+import com.example.universalyogaapp.ui.course.ClassInstanceListActivity;
 import com.example.universalyogaapp.ui.course.CourseListActivity;
 import com.google.android.material.button.MaterialButton;
 
 public class CourseManagerFragment extends Fragment {
 
     private MaterialButton buttonManageCourses;
+    private MaterialButton buttonAllClassInstances;
 
     @Nullable
     @Override
@@ -34,6 +36,7 @@ public class CourseManagerFragment extends Fragment {
 
     private void initViews(View view) {
         buttonManageCourses = view.findViewById(R.id.buttonManageCourses);
+        buttonAllClassInstances = view.findViewById(R.id.buttonAllClassInstances);
     }
 
     private void setupClickListeners() {
@@ -41,5 +44,9 @@ public class CourseManagerFragment extends Fragment {
             Intent intent = new Intent(requireContext(), CourseListActivity.class);
             startActivity(intent);
         });
+        buttonAllClassInstances.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), ClassInstanceListActivity.class);
+            startActivity(intent);
+        });
     }
-} 
+}
