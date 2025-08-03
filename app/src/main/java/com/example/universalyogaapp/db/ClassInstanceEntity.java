@@ -1,44 +1,44 @@
 
-// Entity đại diện cho bảng 'class_instances' trong Room Database
+// Entity representing 'class_instances' table in Room Database
 package com.example.universalyogaapp.db;
 
 
-import androidx.room.Entity; // Annotation đánh dấu class là một entity của Room
-import androidx.room.PrimaryKey; // Annotation đánh dấu trường là primary key
+import androidx.room.Entity; // Annotation to mark class as Room entity
+import androidx.room.PrimaryKey; // Annotation to mark field as primary key
 import androidx.room.Index;
-import androidx.room.Ignore; // Annotation để Room bỏ qua constructor này khi mapping
+import androidx.room.Ignore; // Annotation for Room to ignore this constructor when mapping
 
 
-@Entity(tableName = "class_instances") // Đặt tên bảng là 'class_instances'
+@Entity(tableName = "class_instances") // Set table name as 'class_instances'
 public class ClassInstanceEntity {
-    @PrimaryKey(autoGenerate = true) // id là khoá chính, tự động tăng
-    public int id; // ID tự động tăng trong SQLite, duy nhất cho mỗi bản ghi
+    @PrimaryKey(autoGenerate = true) // id is primary key, auto increment
+    public int id; // Auto increment ID in SQLite, unique for each record
 
-    public String courseId; // Firebase ID của khoá học (dùng cho hiển thị và đồng bộ)
-    public int courseLocalId; // Local ID của khoá học (dùng cho xử lý nội bộ)
-    public String firebaseId; // ID trên Firebase, null nếu chưa sync
-    public String date; // Ngày học cụ thể (định dạng yyyy-MM-dd)
-    public String teacher; // Tên giáo viên
-    public String note; // Ghi chú thêm cho buổi học
-    public boolean isSynced; // Đã đồng bộ với Firebase chưa
+    public String courseId; // Firebase ID of the course (for display and sync)
+    public int courseLocalId; // Local ID of the course (for internal processing)
+    public String firebaseId; // ID on Firebase, null if not synced yet
+    public String date; // Specific class date (format yyyy-MM-dd)
+    public String teacher; // Teacher name
+    public String note; // Additional notes for the class
+    public boolean isSynced; // Whether synced with Firebase
 
-    // Constructor mặc định (bắt buộc cho Room)
+    // Default constructor (required for Room)
     public ClassInstanceEntity() {}
 
-    // Constructor đầy đủ, dùng khi tạo mới hoặc mapping dữ liệu
+    // Full constructor, used when creating new or mapping data
     @Ignore
     public ClassInstanceEntity(int id, String courseId, int courseLocalId, String firebaseId, String date, String teacher, String note, boolean isSynced) {
-        this.id = id; // ID local
-        this.courseId = courseId; // Firebase ID khoá học
-        this.courseLocalId = courseLocalId; // Local ID khoá học
-        this.firebaseId = firebaseId; // ID trên Firebase
-        this.date = date; // Ngày học
-        this.teacher = teacher; // Giáo viên
-        this.note = note; // Ghi chú
-        this.isSynced = isSynced; // Trạng thái đồng bộ
+        this.id = id; // Local ID
+        this.courseId = courseId; // Firebase course ID
+        this.courseLocalId = courseLocalId; // Local course ID
+        this.firebaseId = firebaseId; // Firebase ID
+        this.date = date; // Class date
+        this.teacher = teacher; // Teacher
+        this.note = note; // Notes
+        this.isSynced = isSynced; // Sync status
     }
 
-    // Getter & Setter cho từng trường (bắt buộc cho Room và adapter)
+    // Getter & Setter for each field (required for Room and adapter)
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 

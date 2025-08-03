@@ -1,48 +1,48 @@
 
-// DAO (Data Access Object) cho bảng 'courses' trong Room Database
+// DAO (Data Access Object) for 'courses' table in Room Database
 package com.example.universalyogaapp.dao;
 
-import com.example.universalyogaapp.db.CourseEntity; // Entity đại diện cho bảng courses
-import androidx.room.*; // Annotation cho Room (Insert, Update, Delete, Query, Dao)
-import java.util.List; // Sử dụng List cho kết quả truy vấn
+import com.example.universalyogaapp.db.CourseEntity; // Entity representing courses table
+import androidx.room.*; // Room annotations (Insert, Update, Delete, Query, Dao)
+import java.util.List; // List for query results
 
 
-@Dao // Đánh dấu interface này là DAO cho Room
+@Dao // Mark this interface as DAO for Room
 public interface CourseDao {
 
-    // Thêm mới hoặc cập nhật khoá học (nếu trùng khoá chính)
+    // Insert new or update course (if primary key conflicts)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    long insert(CourseEntity course); // Trả về localId vừa insert
+    long insert(CourseEntity course); // Returns the inserted localId
 
-    // Cập nhật thông tin khoá học
+    // Update course information
     @Update
     void update(CourseEntity course);
 
-    // Xoá một khoá học
+    // Delete a course
     @Delete
     void delete(CourseEntity course);
 
-    // Lấy danh sách các khoá học chưa đồng bộ lên Firebase
+    // Get list of courses not synced to Firebase
     @Query("SELECT * FROM courses WHERE isSynced = 0")
     List<CourseEntity> getUnsyncedCourses();
 
-    // Lấy toàn bộ khoá học
+    // Get all courses
     @Query("SELECT * FROM courses")
     List<CourseEntity> getAllCourses();
 
-    // Lấy khoá học theo firebaseId (dùng cho đồng bộ)
+    // Get course by firebaseId (for synchronization)
     @Query("SELECT * FROM courses WHERE firebaseId = :firebaseId LIMIT 1")
     CourseEntity getCourseByFirebaseId(String firebaseId);
 
-    // Xoá khoá học theo firebaseId (dùng khi xoá trên cloud)
+    // Delete course by firebaseId (when deleting from cloud)
     @Query("DELETE FROM courses WHERE firebaseId = :firebaseId")
     void deleteByFirebaseId(String firebaseId);
 
-    // Xoá toàn bộ khoá học (dùng cho reset database)
+    // Delete all courses (for database reset)
     @Query("DELETE FROM courses")
     void deleteAllCourses();
 
-    // Đánh dấu khoá học đã đồng bộ (isSynced=1) và cập nhật firebaseId
+    // Mark course as synced (isSynced=1) and update firebaseId
     @Query("UPDATE courses SET isSynced = 1, firebaseId = :firebaseId WHERE localId = :localId")
     void markCourseAsSynced(int localId, String firebaseId);
 }

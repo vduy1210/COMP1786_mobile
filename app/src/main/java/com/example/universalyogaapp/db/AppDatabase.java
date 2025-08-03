@@ -1,32 +1,32 @@
 
-// Lớp quản lý Room Database cho toàn bộ app (singleton)
+// Room Database management class for the entire app (singleton)
 package com.example.universalyogaapp.db;
 
 
-import androidx.room.Database; // Annotation định nghĩa database, version, entity
-import androidx.room.RoomDatabase; // Lớp cha cho database
-import androidx.room.migration.Migration; // Hỗ trợ migration khi thay đổi schema
-import androidx.sqlite.db.SupportSQLiteDatabase; // SQLite database cho migration
+import androidx.room.Database; // Annotation to define database, version, entity
+import androidx.room.RoomDatabase; // Parent class for database
+import androidx.room.migration.Migration; // Support migration when schema changes
+import androidx.sqlite.db.SupportSQLiteDatabase; // SQLite database for migration
 
 
-import com.example.universalyogaapp.dao.CourseDao; // DAO cho courses
-import com.example.universalyogaapp.dao.ClassInstanceDao; // DAO cho class_instances
-import com.example.universalyogaapp.db.ClassInstanceEntity; // Entity cho class_instances
+import com.example.universalyogaapp.dao.CourseDao; // DAO for courses
+import com.example.universalyogaapp.dao.ClassInstanceDao; // DAO for class_instances
+import com.example.universalyogaapp.db.ClassInstanceEntity; // Entity for class_instances
 
-@Database(entities = {CourseEntity.class, ClassInstanceEntity.class}, version = 8) // Định nghĩa entity và version
+@Database(entities = {CourseEntity.class, ClassInstanceEntity.class}, version = 8) // Define entity and version
 public abstract class AppDatabase extends RoomDatabase {
-    // Migration từ version 7 lên 8: Đổi tên cột courseId thành courseid cho đồng bộ với entity
+    // Migration from version 7 to 8: Rename courseId column to courseid for entity synchronization
     public static final Migration MIGRATION_7_8 = new Migration(7, 8) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
-            // Room không hỗ trợ ALTER COLUMN, nên phải tạo bảng mới rồi copy dữ liệu
+            // Room doesn't support ALTER COLUMN, so need to create new table and copy data
             database.execSQL("CREATE TABLE courses_new (localId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, firebaseId TEXT, courseid TEXT, name TEXT, schedule TEXT, time TEXT, description TEXT, note TEXT, upcomingDate TEXT, capacity INTEGER NOT NULL, duration INTEGER NOT NULL, price REAL NOT NULL, isSynced INTEGER NOT NULL)");
             database.execSQL("INSERT INTO courses_new (localId, firebaseId, courseid, name, schedule, time, description, note, upcomingDate, capacity, duration, price, isSynced) SELECT localId, firebaseId, courseId, name, schedule, time, description, note, upcomingDate, capacity, duration, price, isSynced FROM courses");
             database.execSQL("DROP TABLE courses");
             database.execSQL("ALTER TABLE courses_new RENAME TO courses");
         }
     };
-    // Migration từ version 6 lên 7: Thêm cột courseId vào bảng courses
+    // Migration from version 6 to 7: Add courseId column to courses table
     public static final Migration MIGRATION_6_7 = new Migration(6, 7) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
@@ -34,17 +34,17 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
-    // Trả về DAO cho courses
+    // Return DAO for courses
     public abstract CourseDao courseDao();
-    // Trả về DAO cho class_instances
+    // Return DAO for class_instances
     public abstract ClassInstanceDao classInstanceDao();
 
 
-    // Migration từ version 5 lên 6: Xoá cột teacher khỏi bảng courses
+    // Migration from version 5 to 6: Remove teacher column from courses table
     public static final Migration MIGRATION_5_6 = new Migration(5, 6) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
-            // Tạo bảng mới không có cột teacher
+            // Create new table without teacher column
             database.execSQL("CREATE TABLE courses_new (" +
                     "localId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "firebaseId TEXT, " +
@@ -59,31 +59,31 @@ public abstract class AppDatabase extends RoomDatabase {
                     "price REAL NOT NULL, " +
                     "isSynced INTEGER NOT NULL)");
 
-            // Copy dữ liệu từ bảng cũ sang bảng mới (bỏ cột teacher)
+            // Copy data from old table to new table (exclude teacher column)
             database.execSQL("INSERT INTO courses_new (localId, firebaseId, name, schedule, time, description, note, upcomingDate, capacity, duration, price, isSynced) " +
                     "SELECT localId, firebaseId, name, schedule, time, description, note, upcomingDate, capacity, duration, price, isSynced FROM courses");
 
-            // Xoá bảng cũ
+            // Drop old table
             database.execSQL("DROP TABLE courses");
 
-            // Đổi tên bảng mới thành bảng gốc
+            // Rename new table to original table name
             database.execSQL("ALTER TABLE courses_new RENAME TO courses");
         }
     };
 
 
-    // Singleton instance cho database
+    // Singleton instance for database
     private static AppDatabase instance;
 
-    // Hàm lấy instance duy nhất của database, đảm bảo chỉ tạo 1 lần
+    // Function to get unique database instance, ensuring only one creation
     public static synchronized AppDatabase getInstance(android.content.Context context) {
         if (instance == null) {
             instance = androidx.room.Room.databaseBuilder(
-                context.getApplicationContext(), // Context app
-                AppDatabase.class, // Class database
-                "yoga-db" // Tên file database
-            ).allowMainThreadQueries() // Cho phép query trên main thread (không khuyến khích cho production)
-             .addMigrations(AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8) // Thêm các migration
+                context.getApplicationContext(), // App context
+                AppDatabase.class, // Database class
+                "yoga-db" // Database file name
+            ).allowMainThreadQueries() // Allow queries on main thread (not recommended for production)
+             .addMigrations(AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8) // Add migrations
             .build();
         }
         return instance;

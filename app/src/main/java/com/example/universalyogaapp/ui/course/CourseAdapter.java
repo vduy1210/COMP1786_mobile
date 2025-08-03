@@ -1,5 +1,5 @@
 
-// Adapter cho RecyclerView hiển thị danh sách khoá học
+// Adapter for RecyclerView to display course list
 package com.example.universalyogaapp.ui.course;
 
 import android.view.LayoutInflater;
@@ -17,31 +17,31 @@ import com.example.universalyogaapp.utils.DateUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-// Adapter cho RecyclerView hiển thị danh sách khoá học
+// Adapter for RecyclerView to display course list
 public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.CourseViewHolder> {
-    private List<Course> courseList = new ArrayList<>(); // Danh sách khoá học
-    private OnItemClickListener listener; // Listener cho sự kiện click item
+    private List<Course> courseList = new ArrayList<>(); // Course list
+    private OnItemClickListener listener; // Listener for item click events
 
-    // Interface cho sự kiện click vào item khoá học
+    // Interface for course item click events
     public interface OnItemClickListener {
         void onItemClick(Course course);
     }
 
-    // Gán listener cho adapter
+    // Set listener for adapter
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
 
-    // Gán danh sách khoá học cho adapter
+    // Set course list for adapter
     public void setCourseList(List<Course> courses) {
         this.courseList = courses;
-        notifyDataSetChanged(); // Cập nhật lại RecyclerView
+        notifyDataSetChanged(); // Update RecyclerView
     }
 
     @NonNull
     @Override
     public CourseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Inflate layout cho từng item khoá học
+        // Inflate layout for each course item
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_course, parent, false);
         return new CourseViewHolder(view);
     }
@@ -49,9 +49,9 @@ public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.CourseView
     @Override
     public void onBindViewHolder(@NonNull CourseViewHolder holder, int position) {
         Course course = courseList.get(position);
-        holder.textViewName.setText(course.getName()); // Hiển thị tên khoá học
-        holder.textViewDescription.setText(course.getDescription()); // Hiển thị mô tả
-        // Hiển thị viết tắt 3 chữ đầu cho mỗi ngày trong lịch học
+        holder.textViewName.setText(course.getName()); // Display course name
+        holder.textViewDescription.setText(course.getDescription()); // Display description
+        // Display abbreviated first 3 letters for each day in schedule
         String shortSchedule = "";
         if (course.getSchedule() != null && !course.getSchedule().isEmpty()) {
             String[] days = course.getSchedule().split(",");
@@ -65,13 +65,13 @@ public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.CourseView
                 }
                 sb.append(", ");
             }
-            if (sb.length() > 2) sb.setLength(sb.length() - 2); // Xoá dấu phẩy cuối
+            if (sb.length() > 2) sb.setLength(sb.length() - 2); // Remove trailing comma
             shortSchedule = sb.toString();
         }
-        holder.textViewSchedule.setText(shortSchedule); // Hiển thị lịch học
-        holder.textViewTime.setText(course.getTime()); // Hiển thị giờ học
+        holder.textViewSchedule.setText(shortSchedule); // Display schedule
+        holder.textViewTime.setText(course.getTime()); // Display class time
 
-        // Sự kiện click vào item khoá học
+        // Click event for course item
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onItemClick(course);
@@ -81,10 +81,10 @@ public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.CourseView
 
     @Override
     public int getItemCount() {
-        return courseList.size(); // Trả về số lượng khoá học
+        return courseList.size(); // Return number of courses
     }
 
-    // ViewHolder cho từng item khoá học
+    // ViewHolder for each course item
     class CourseViewHolder extends RecyclerView.ViewHolder {
         TextView textViewName, textViewDescription, textViewSchedule, textViewTime;
 

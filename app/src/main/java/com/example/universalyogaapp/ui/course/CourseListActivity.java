@@ -1,200 +1,195 @@
-
-// Activity hiển thị danh sách khoá học, thống kê, tìm kiếm, đồng bộ dữ liệu
 // Activity to display course list, statistics, search, and data synchronization
-package com.example.universalyogaapp.ui.course; // Khai báo package - Package declaration
+package com.example.universalyogaapp.ui.course;
 
-import android.content.Intent; // Import Intent để chuyển màn hình - Import Intent for screen navigation
-import android.os.Bundle; // Import Bundle để truyền dữ liệu - Import Bundle for data passing
-import android.text.Editable; // Import Editable cho TextWatcher - Import Editable for TextWatcher
-import android.text.TextWatcher; // Import TextWatcher để lắng nghe thay đổi text - Import TextWatcher to listen for text changes
-import android.view.View; // Import View cho UI components - Import View for UI components
-import android.widget.TextView; // Import TextView để hiển thị text - Import TextView for text display
-import android.widget.Toast; // Import Toast để hiển thị thông báo - Import Toast for notifications
-import android.widget.Button; // Import Button cho các nút bấm - Import Button for clickable buttons
-import android.app.AlertDialog; // Import AlertDialog cho dialog xác nhận - Import AlertDialog for confirmation dialogs
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.Button;
+import android.app.AlertDialog;
 
-import androidx.annotation.NonNull; // Import NonNull annotation - Import NonNull annotation
-import androidx.appcompat.app.AppCompatActivity; // Import AppCompatActivity làm lớp cha - Import AppCompatActivity as parent class
-import androidx.recyclerview.widget.LinearLayoutManager; // Import LinearLayoutManager cho RecyclerView - Import LinearLayoutManager for RecyclerView
-import androidx.recyclerview.widget.RecyclerView; // Import RecyclerView để hiển thị danh sách - Import RecyclerView for list display
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.universalyogaapp.R; // Import resource file - Import resource file
-import com.example.universalyogaapp.firebase.FirebaseManager; // Import FirebaseManager để đồng bộ - Import FirebaseManager for synchronization
-import com.example.universalyogaapp.model.Course; // Import model Course - Import Course model
-import com.google.android.material.button.MaterialButton; // Import MaterialButton cho UI đẹp - Import MaterialButton for beautiful UI
-import com.google.android.material.textfield.TextInputEditText; // Import TextInputEditText cho input field - Import TextInputEditText for input field
-import com.google.firebase.database.DataSnapshot; // Import DataSnapshot để đọc dữ liệu Firebase - Import DataSnapshot for Firebase data reading
-import com.google.firebase.database.DatabaseError; // Import DatabaseError để xử lý lỗi - Import DatabaseError for error handling
-import com.google.firebase.database.ValueEventListener; // Import ValueEventListener để lắng nghe Firebase - Import ValueEventListener for Firebase listening
+import com.example.universalyogaapp.R;
+import com.example.universalyogaapp.firebase.FirebaseManager;
+import com.example.universalyogaapp.model.Course;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList; // Import ArrayList cho danh sách - Import ArrayList for lists
-import java.util.List; // Import List interface - Import List interface
-import androidx.room.Room; // Import Room database builder - Import Room database builder
-import com.example.universalyogaapp.db.AppDatabase; // Import AppDatabase cho Room - Import AppDatabase for Room
-import com.example.universalyogaapp.db.CourseEntity; // Import CourseEntity cho Room - Import CourseEntity for Room
-import com.example.universalyogaapp.db.ClassInstanceEntity; // Import ClassInstanceEntity cho Room - Import ClassInstanceEntity for Room
-import com.example.universalyogaapp.dao.ClassInstanceDao; // Import DAO cho buổi học - Import DAO for class instances
-import com.example.universalyogaapp.model.ClassInstance; // Import model ClassInstance - Import ClassInstance model
-import java.text.ParseException; // Import ParseException để xử lý lỗi parse - Import ParseException for parse error handling
-import java.text.SimpleDateFormat; // Import SimpleDateFormat để format ngày - Import SimpleDateFormat for date formatting
-import java.util.Date; // Import Date cho xử lý ngày tháng - Import Date for date handling
-import java.util.Locale; // Import Locale cho định dạng theo vùng - Import Locale for regional formatting
+import java.util.ArrayList;
+import java.util.List;
+import androidx.room.Room;
+import com.example.universalyogaapp.db.AppDatabase;
+import com.example.universalyogaapp.db.CourseEntity;
+import com.example.universalyogaapp.db.ClassInstanceEntity;
+import com.example.universalyogaapp.dao.ClassInstanceDao;
+import com.example.universalyogaapp.model.ClassInstance;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
-// Activity hiển thị danh sách khoá học, thống kê, tìm kiếm, đồng bộ dữ liệu
 // Activity to display course list, statistics, search, and data synchronization
-public class CourseListActivity extends AppCompatActivity { // Lớp Activity kế thừa AppCompatActivity - Activity class extending AppCompatActivity
-    private RecyclerView recyclerView; // RecyclerView hiển thị danh sách khoá học - RecyclerView to display course list
-    private CourseAdapter adapter; // Adapter cho RecyclerView - Adapter for RecyclerView
-    private List<Course> courseList; // Danh sách khoá học đang hiển thị - Currently displayed course list
-    private List<Course> fullCourseList; // Danh sách đầy đủ để lọc - Full course list for filtering
-    private FirebaseManager firebaseManager; // Quản lý đồng bộ Firebase - Firebase synchronization manager
-    private TextView textViewStatsCourses, textViewStatsStudents, textViewStatsRevenue; // Các TextView thống kê - Statistics TextViews
-    private AppDatabase db; // Room database - Room database instance
-    private Button buttonSync; // Nút đồng bộ dữ liệu - Data synchronization button
+public class CourseListActivity extends AppCompatActivity {
+    private RecyclerView recyclerView; // RecyclerView to display course list
+    private CourseAdapter adapter; // Adapter for RecyclerView
+    private List<Course> courseList; // Currently displayed course list
+    private List<Course> fullCourseList; // Full course list for filtering
+    private FirebaseManager firebaseManager; // Firebase synchronization manager
+    private TextView textViewStatsCourses, textViewStatsStudents, textViewStatsRevenue; // Statistics TextViews
+    private AppDatabase db; // Room database instance
+    private Button buttonSync; // Data synchronization button
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) { // Phương thức được gọi khi Activity được tạo - Method called when Activity is created
-        super.onCreate(savedInstanceState); // Gọi phương thức cha - Call parent method
-        setContentView(R.layout.activity_course_list); // Gán layout cho Activity - Set layout for Activity
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_course_list);
 
-        // Khởi tạo database - Initialize database
-        db = Room.databaseBuilder( // Xây dựng Room database - Build Room database
-            getApplicationContext(), // Context ứng dụng - Application context
-            AppDatabase.class, // Class database - Database class
-            "yoga-db" // Tên database - Database name
-        ).allowMainThreadQueries() // Cho phép query trên main thread - Allow main thread queries
-                         .addMigrations(AppDatabase.MIGRATION_5_6) // Thêm migration từ version 5 lên 6 - Add migration from version 5 to 6
-        .build(); // Xây dựng database - Build database
+        // Initialize database
+        db = Room.databaseBuilder(
+            getApplicationContext(),
+            AppDatabase.class,
+            "yoga-db"
+        ).allowMainThreadQueries()
+                         .addMigrations(AppDatabase.MIGRATION_5_6)
+        .build();
 
-        // Khởi tạo các view và adapter - Initialize views and adapter
-        recyclerView = findViewById(R.id.recyclerViewCourses); // Tìm RecyclerView trong layout - Find RecyclerView in layout
-        recyclerView.setLayoutManager(new LinearLayoutManager(this)); // Gán layout manager dạng danh sách - Set linear layout manager
-        courseList = new ArrayList<>(); // Khởi tạo danh sách khoá học hiện tại - Initialize current course list
-        fullCourseList = new ArrayList<>(); // Khởi tạo danh sách đầy đủ - Initialize full course list
-        adapter = new CourseAdapter(); // Tạo adapter mới - Create new adapter
-        recyclerView.setAdapter(adapter); // Gán adapter cho RecyclerView - Set adapter for RecyclerView
-        firebaseManager = new FirebaseManager(); // Khởi tạo Firebase manager - Initialize Firebase manager
-        textViewStatsCourses = findViewById(R.id.textViewStatsCourses); // Tìm TextView thống kê số khoá học - Find TextView for course statistics
-        textViewStatsStudents = findViewById(R.id.textViewStatsStudents); // Tìm TextView thống kê số học viên - Find TextView for student statistics
-        textViewStatsRevenue = findViewById(R.id.textViewStatsRevenue); // Tìm TextView thống kê doanh thu - Find TextView for revenue statistics
-        loadCourses(); // Load dữ liệu khoá học - Load course data
+        // Initialize views and adapter
+        recyclerView = findViewById(R.id.recyclerViewCourses);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        courseList = new ArrayList<>();
+        fullCourseList = new ArrayList<>();
+        adapter = new CourseAdapter();
+        recyclerView.setAdapter(adapter);
+        firebaseManager = new FirebaseManager();
+        textViewStatsCourses = findViewById(R.id.textViewStatsCourses);
+        textViewStatsStudents = findViewById(R.id.textViewStatsStudents);
+        textViewStatsRevenue = findViewById(R.id.textViewStatsRevenue);
+        loadCourses(); // Load course data
 
-        // Sự kiện click vào item khoá học để xem chi tiết - Click event on course item to view details
-        adapter.setOnItemClickListener(new CourseAdapter.OnItemClickListener() { // Thiết lập listener cho item click - Set listener for item click
+        // Click event on course item to view details
+        adapter.setOnItemClickListener(new CourseAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(Course course) { // Khi click vào một khoá học - When clicking on a course
-                Intent intent = new Intent(CourseListActivity.this, CourseDetailActivity.class); // Tạo Intent chuyển màn hình - Create Intent for screen navigation
-                intent.putExtra("course_id", course.getId()); // Truyền ID khoá học - Pass course ID
-                startActivity(intent); // Khởi chạy Activity chi tiết - Start detail Activity
+            public void onItemClick(Course course) {
+                Intent intent = new Intent(CourseListActivity.this, CourseDetailActivity.class);
+                intent.putExtra("course_id", course.getId());
+                startActivity(intent);
             }
         });
 
-        // Sự kiện thêm khoá học mới - Event for adding new course
-        MaterialButton buttonAddCourse = findViewById(R.id.buttonAddCourse); // Tìm nút thêm khoá học - Find add course button
-        buttonAddCourse.setOnClickListener(new View.OnClickListener() { // Thiết lập listener cho nút thêm - Set listener for add button
+        // Event for adding new course
+        MaterialButton buttonAddCourse = findViewById(R.id.buttonAddCourse);
+        buttonAddCourse.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) { // Khi nhấn nút thêm - When add button is clicked
-                Intent intent = new Intent(CourseListActivity.this, AddEditCourseActivity.class); // Tạo Intent chuyển màn hình - Create Intent for screen navigation
-                startActivity(intent); // Khởi chạy Activity thêm/sửa - Start add/edit Activity
+            public void onClick(View v) {
+                Intent intent = new Intent(CourseListActivity.this, AddEditCourseActivity.class);
+                startActivity(intent);
             }
         });
 
-        // Sự kiện tìm kiếm khoá học - Event for course search
-        TextInputEditText editTextSearch = findViewById(R.id.editTextSearch); // Tìm ô tìm kiếm - Find search input field
-        editTextSearch.addTextChangedListener(new TextWatcher() { // Thêm listener lắng nghe thay đổi text - Add listener for text changes
+        // Event for course search
+        TextInputEditText editTextSearch = findViewById(R.id.editTextSearch);
+        editTextSearch.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {} // Trước khi text thay đổi - Before text changes
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) { // Khi text đang thay đổi - When text is changing
-                filterCourses(s.toString()); // Lọc khoá học theo từ khoá - Filter courses by keyword
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterCourses(s.toString());
             }
             @Override
-            public void afterTextChanged(Editable s) {} // Sau khi text thay đổi - After text changes
+            public void afterTextChanged(Editable s) {}
         });
-        // Sự kiện đồng bộ dữ liệu - Event for data synchronization
-        buttonSync = findViewById(R.id.buttonSync); // Tìm nút đồng bộ - Find sync button
-        buttonSync.setOnClickListener(new View.OnClickListener() { // Thiết lập listener cho nút đồng bộ - Set listener for sync button
+        // Event for data synchronization
+        buttonSync = findViewById(R.id.buttonSync);
+        buttonSync.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) { // Khi nhấn nút đồng bộ - When sync button is clicked
-                // Ngăn đồng bộ nhiều lần liên tiếp - Prevent multiple consecutive syncs
-                if (!buttonSync.isEnabled()) { // Nếu nút đang bị vô hiệu hoá - If button is disabled
-                    return; // Thoát khỏi phương thức - Exit method
+            public void onClick(View v) {
+                // Prevent multiple consecutive syncs
+                if (!buttonSync.isEnabled()) {
+                    return;
                 }
-                // Hiển thị trạng thái đang đồng bộ - Display syncing status
-                buttonSync.setEnabled(false); // Vô hiệu hoá nút - Disable button
-                buttonSync.setText("Syncing..."); // Đổi text nút - Change button text
-                // Thực hiện đồng bộ toàn bộ - Perform complete synchronization
-                performCompleteSync(); // Gọi phương thức đồng bộ - Call sync method
+                // Display syncing status
+                buttonSync.setEnabled(false);
+                buttonSync.setText("Syncing...");
+                // Perform complete synchronization
+                performCompleteSync();
             }
         });
 
-        // Sự kiện xem tất cả buổi học - Event for viewing all class instances
-        MaterialButton buttonAllClassInstances = findViewById(R.id.buttonAllClassInstances); // Tìm nút xem tất cả buổi học - Find view all instances button
-        buttonAllClassInstances.setOnClickListener(new View.OnClickListener() { // Thiết lập listener cho nút - Set listener for button
+        // Event for viewing all class instances
+        MaterialButton buttonAllClassInstances = findViewById(R.id.buttonAllClassInstances);
+        buttonAllClassInstances.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) { // Khi nhấn nút - When button is clicked
-                Intent intent = new Intent(CourseListActivity.this, ClassInstanceListActivity.class); // Tạo Intent chuyển màn hình - Create Intent for screen navigation
-                startActivity(intent); // Khởi chạy Activity danh sách buổi học - Start class instance list Activity
+            public void onClick(View v) {
+                Intent intent = new Intent(CourseListActivity.this, ClassInstanceListActivity.class);
+                startActivity(intent);
             }
         });
 
-        // Tự động đồng bộ khoá học lên Firebase khi mở activity - Auto sync courses to Firebase when opening activity
-        syncCoursesToFirebase(); // Gọi phương thức đồng bộ - Call sync method
+        // Auto sync courses to Firebase when opening activity
+        syncCoursesToFirebase();
     }
 
     @Override
-    protected void onResume() { // Phương thức được gọi khi Activity quay lại tiền cảnh - Method called when Activity returns to foreground
-        super.onResume(); // Gọi phương thức cha - Call parent method
-        loadCourses(); // Tải lại danh sách khoá học - Reload course list
+    protected void onResume() {
+        super.onResume();
+        loadCourses();
     }
 
-    // Load danh sách khoá học từ database local, cập nhật thống kê
     // Load course list from local database, update statistics
-    private void loadCourses() { // Phương thức tải danh sách khoá học - Method to load course list
-        courseList.clear(); // Xoá danh sách hiện tại - Clear current list
-        fullCourseList.clear(); // Xoá danh sách đầy đủ - Clear full list
-        List<CourseEntity> entities = db.courseDao().getAllCourses(); // Lấy tất cả khoá học từ database - Get all courses from database
-        int totalCourses = 0; // Biến đếm tổng số khoá học - Variable to count total courses
-        int totalStudents = 0; // Biến đếm tổng số học viên - Variable to count total students
-        double totalRevenueUSD = 0; // Biến tính tổng doanh thu - Variable to calculate total revenue
-        for (CourseEntity entity : entities) { // Duyệt qua từng entity - Iterate through each entity
-            Course course = new Course( // Tạo đối tượng Course từ entity - Create Course object from entity
-                entity.firebaseId, // Firebase ID - Firebase ID
-                entity.name, // Tên khoá học - Course name
-                entity.schedule, // Lịch học - Schedule
-                entity.time, // Giờ học - Time
-                entity.capacity, // Sức chứa - Capacity
-                entity.price, // Giá - Price
-                entity.duration, // Thời lượng - Duration
-                entity.description, // Mô tả - Description
-                entity.note, // Ghi chú - Note
-                entity.upcomingDate, // Ngày sắp tới - Upcoming date
-                entity.localId // truyền localId từ entity - pass localId from entity
+    private void loadCourses() {
+        courseList.clear();
+        fullCourseList.clear();
+        List<CourseEntity> entities = db.courseDao().getAllCourses();
+        int totalCourses = 0;
+        int totalStudents = 0;
+        double totalRevenueUSD = 0;
+        for (CourseEntity entity : entities) {
+            Course course = new Course(
+                entity.firebaseId,
+                entity.name,
+                entity.schedule,
+                entity.time,
+                entity.capacity,
+                entity.price,
+                entity.duration,
+                entity.description,
+                entity.note,
+                entity.upcomingDate,
+                entity.localId // pass localId from entity
             );
-            courseList.add(course); // Thêm vào danh sách hiển thị - Add to display list
-            fullCourseList.add(course); // Thêm vào danh sách đầy đủ - Add to full list
-            totalCourses++; // Tăng số lượng khoá học - Increment course count
-            totalStudents += entity.capacity; // Cộng dồn số học viên - Accumulate student count
-            totalRevenueUSD += entity.price * entity.capacity; // Tính tổng doanh thu - Calculate total revenue
+            courseList.add(course);
+            fullCourseList.add(course);
+            totalCourses++;
+            totalStudents += entity.capacity;
+            totalRevenueUSD += entity.price * entity.capacity;
         }
-        // Hiển thị thống kê - Display statistics
-        textViewStatsCourses.setText(String.valueOf(totalCourses)); // Hiển thị số khoá học - Display course count
-        textViewStatsStudents.setText(String.valueOf(totalStudents)); // Hiển thị số học viên - Display student count
-        textViewStatsRevenue.setText(formatCurrencyUSD(totalRevenueUSD) + " $"); // Hiển thị doanh thu - Display revenue
-        adapter.setCourseList(courseList); // Cập nhật adapter với danh sách mới - Update adapter with new list
+        // Display statistics
+        textViewStatsCourses.setText(String.valueOf(totalCourses));
+        textViewStatsStudents.setText(String.valueOf(totalStudents));
+        textViewStatsRevenue.setText(formatCurrencyUSD(totalRevenueUSD) + " $");
+        adapter.setCourseList(courseList);
     }
 
-    // Lọc khoá học theo từ khoá (tên, lịch, ngày, v.v.)
     // Filter courses by keyword (name, schedule, date, etc.)
-    private void filterCourses(String keyword) { // Phương thức lọc khoá học - Method to filter courses
-        List<Course> filtered = new ArrayList<>(); // Danh sách kết quả lọc - Filtered result list
-        String lowerKeyword = keyword.toLowerCase(); // Chuyển từ khoá về chữ thường - Convert keyword to lowercase
+    private void filterCourses(String keyword) {
+        List<Course> filtered = new ArrayList<>();
+        String lowerKeyword = keyword.toLowerCase();
         SimpleDateFormat[] dateFormats = new SimpleDateFormat[] {
             new SimpleDateFormat("yyyy-MM-dd", Locale.US),
             new SimpleDateFormat("dd/MM/yyyy", Locale.US)
         };
         String dayOfWeek = null;
-        // Thử parse ngày để lọc theo thứ
+        // Try parsing date to filter by day of week
         for (SimpleDateFormat sdf : dateFormats) {
             try {
                 Date date = sdf.parse(keyword);
@@ -208,11 +203,11 @@ public class CourseListActivity extends AppCompatActivity { // Lớp Activity k�
         }
         for (Course course : fullCourseList) {
             boolean match = false;
-            // Nếu nhập là ngày, lọc theo thứ
+            // If input is a date, filter by day of week
             if (dayOfWeek != null) {
                 match = course.getSchedule() != null && course.getSchedule().toLowerCase().contains(dayOfWeek.toLowerCase());
             } else {
-                // Nếu nhập là tên thứ
+                // If input is a day name
                 String[] weekDays = {"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "mon", "tue", "wed", "thu", "fri", "sat", "sun"};
                 for (String wd : weekDays) {
                     if (lowerKeyword.equals(wd) && course.getSchedule() != null && course.getSchedule().toLowerCase().contains(wd)) {
@@ -221,7 +216,7 @@ public class CourseListActivity extends AppCompatActivity { // Lớp Activity k�
                     }
                 }
 
-                // Nếu nhập là tên khoá học hoặc lịch
+                // If input is course name or schedule
                 if (!match && course.getName() != null && course.getName().toLowerCase().contains(lowerKeyword)) {
                     match = true;
                 }
@@ -236,12 +231,12 @@ public class CourseListActivity extends AppCompatActivity { // Lớp Activity k�
         adapter.setCourseList(filtered);
     }
 
-    // Định dạng số tiền USD
+    // Format USD currency
     private String formatCurrencyUSD(double value) {
         return String.format("% ,.2f", value);
     }
 
-    // Đẩy các khoá học chưa đồng bộ lên Firebase
+    // Push unsynced courses to Firebase
     public void syncCoursesToFirebase() {
         List<CourseEntity> unsynced = db.courseDao().getUnsyncedCourses();
         FirebaseManager firebaseManager = new FirebaseManager();
@@ -259,10 +254,10 @@ public class CourseListActivity extends AppCompatActivity { // Lớp Activity k�
                 }
             });
         }
-        // Đã bỏ phần reload lại toàn bộ từ Firebase về Room
+        // Removed full reload from Firebase to Room
     }
 
-    // Đẩy các buổi học chưa đồng bộ lên Firebase
+    // Push unsynced class instances to Firebase
     public void syncClassInstancesToFirebase() {
         List<ClassInstanceEntity> unsynced = db.classInstanceDao().getUnsyncedInstances();
         FirebaseManager firebaseManager = new FirebaseManager();
@@ -276,15 +271,15 @@ public class CourseListActivity extends AppCompatActivity { // Lớp Activity k�
         final int totalCount = unsynced.size();
 
         for (ClassInstanceEntity entity : unsynced) {
-            // Nếu đã có Firebase ID thì bỏ qua
+            // Skip if already has Firebase ID
             if (entity.firebaseId != null) {
                 continue;
             }
 
-            // Tạo ClassInstance với courseId là firebaseId
+            // Create ClassInstance with courseId as firebaseId
             ClassInstance instance = new ClassInstance(
                 entity.firebaseId, 
-                entity.courseId, // Đây là firebaseId của khoá học
+                entity.courseId, // This is the firebaseId of the course
                 entity.date, 
                 entity.teacher, 
                 entity.note, 
@@ -293,17 +288,17 @@ public class CourseListActivity extends AppCompatActivity { // Lớp Activity k�
 
             firebaseManager.addClassInstance(instance, (error, ref) -> {
                 if (error == null) {
-                    // Cập nhật local entity với Firebase ID và đánh dấu đã sync
+                    // Update local entity with Firebase ID and mark as synced
                     entity.isSynced = true;
                     entity.firebaseId = ref.getKey();
                     db.classInstanceDao().update(entity);
                     syncedCount[0]++;
                 } else {
-                    // Nếu sync thất bại, giữ lại để retry
+                    // If sync fails, keep for retry
                     Toast.makeText(CourseListActivity.this, "Failed to sync class instance", Toast.LENGTH_SHORT).show();
                 }
 
-                // Kiểm tra đã xử lý hết chưa
+                // Check if all processed
                 if (syncedCount[0] + (totalCount - unsynced.size()) == totalCount) {
                     runOnUiThread(() -> {
                         Toast.makeText(CourseListActivity.this, 
@@ -315,11 +310,11 @@ public class CourseListActivity extends AppCompatActivity { // Lớp Activity k�
         }
     }
 
-    // Lấy dữ liệu buổi học từ Firebase về local
+    // Get class instance data from Firebase to local
     public void pullClassInstancesFromFirebase() {
         FirebaseManager firebaseManager = new FirebaseManager();
 
-        // Lấy tất cả khoá học
+        // Get all courses
         List<CourseEntity> courses = db.courseDao().getAllCourses();
 
         for (CourseEntity course : courses) {
@@ -332,11 +327,11 @@ public class CourseListActivity extends AppCompatActivity { // Lớp Activity k�
                             if (firebaseInstance != null) {
                                 firebaseInstance.setId(child.getKey());
 
-                                // Kiểm tra instance đã tồn tại local chưa (theo firebaseId)
+                                // Check if instance already exists locally (by firebaseId)
                                 ClassInstanceEntity existingEntity = db.classInstanceDao().getInstanceByFirebaseId(child.getKey());
 
                                 if (existingEntity == null) {
-                                    // Kiểm tra trùng ngày để tránh duplicate
+                                    // Check for duplicate dates to avoid duplicates
                                     List<ClassInstanceEntity> similarInstances = db.classInstanceDao().getInstancesForCourse(course.firebaseId);
                                     boolean isDuplicate = false;
 
@@ -348,13 +343,13 @@ public class CourseListActivity extends AppCompatActivity { // Lớp Activity k�
                                     }
 
                                     if (!isDuplicate) {
-                                        // Tạo entity mới local
+                                        // Create new local entity
                                         ClassInstanceEntity newEntity = new ClassInstanceEntity();
                                         newEntity.firebaseId = child.getKey();
                                         newEntity.courseId = course.firebaseId;
                                         newEntity.courseLocalId = course.localId;
                                         newEntity.date = firebaseInstance.getDate();
-                                        newEntity.teacher = ""; // Chưa có thông tin giáo viên
+                                        newEntity.teacher = ""; // No teacher information yet
                                         newEntity.note = firebaseInstance.getNote();
                                         newEntity.isSynced = true;
 
@@ -374,35 +369,35 @@ public class CourseListActivity extends AppCompatActivity { // Lớp Activity k�
         }
     }
 
-    // Thực hiện đồng bộ toàn bộ: xoá duplicate, đẩy lên Firebase, lấy về local
+    // Perform complete sync: remove duplicates, push to Firebase, pull to local
     private void performCompleteSync() {
-        // Xoá duplicate trước
+        // Remove duplicates first
         cleanupDuplicateInstances();
 
-        // Đẩy dữ liệu local lên Firebase (chỉ dữ liệu chưa sync)
+        // Push local data to Firebase (only unsynced data)
         syncCoursesToFirebase();
         syncClassInstancesToFirebase();
 
-        // Lấy dữ liệu từ Firebase về local (delay để tránh xung đột)
+        // Pull data from Firebase to local (delay to avoid conflicts)
         buttonSync.postDelayed(() -> {
             pullClassInstancesFromFirebase();
-        }, 2000); // Delay 2 giây
+        }, 2000); // 2 second delay
 
-        // Bật lại nút sau delay
+        // Re-enable button after delay
         buttonSync.postDelayed(() -> {
             buttonSync.setEnabled(true);
             buttonSync.setText("Sync Data");
             Toast.makeText(CourseListActivity.this, "Sync completed", Toast.LENGTH_SHORT).show();
-        }, 5000); // Delay 5 giây
+        }, 5000); // 5 second delay
     }
 
-    // Xoá các buổi học duplicate (giữ lại bản có ID nhỏ nhất)
+    // Remove duplicate class instances (keep the one with smallest ID)
     private void cleanupDuplicateInstances() {
         List<ClassInstanceDao.DuplicateInfo> duplicates = db.classInstanceDao().getDuplicateInfo();
 
         int cleanedCount = 0;
         for (ClassInstanceDao.DuplicateInfo duplicate : duplicates) {
-            // Xoá duplicate, giữ lại bản có ID nhỏ nhất
+            // Remove duplicates, keep the one with smallest ID
             db.classInstanceDao().deleteDuplicateInstances(duplicate.courseId, duplicate.date);
             cleanedCount++;
         }
@@ -412,14 +407,14 @@ public class CourseListActivity extends AppCompatActivity { // Lớp Activity k�
         }
     }
 
-    // Hàm gọi xoá duplicate từ UI
+    // Function to call duplicate cleanup from UI
     public void manualCleanupDuplicates() {
         new AlertDialog.Builder(this)
                 .setTitle("Clean Up Duplicates")
                 .setMessage("This will remove duplicate class instances. Continue?")
                 .setPositiveButton("Clean Up", (dialog, which) -> {
                     cleanupDuplicateInstances();
-                    // Refresh lại danh sách khoá học
+                    // Refresh course list
                     loadCourses();
                 })
                 .setNegativeButton("Cancel", null)

@@ -1,62 +1,62 @@
 
-// Entity đại diện cho bảng 'courses' trong Room Database
+// Entity representing 'courses' table in Room Database
 package com.example.universalyogaapp.db;
 
 
-import androidx.room.Entity; // Annotation đánh dấu class là một entity của Room
-import androidx.room.PrimaryKey; // Annotation đánh dấu trường là primary key
+import androidx.room.Entity; // Annotation to mark class as Room entity
+import androidx.room.PrimaryKey; // Annotation to mark field as primary key
 import androidx.room.Index;
-import androidx.room.Ignore; // Annotation để Room bỏ qua constructor này khi mapping
+import androidx.room.Ignore; // Annotation for Room to ignore this constructor when mapping
 
-@Entity(tableName = "courses") // Đặt tên bảng là 'courses'
+@Entity(tableName = "courses") // Set table name as 'courses'
 
-// Lớp entity cho bảng 'courses', lưu thông tin khoá học
+// Entity class for 'courses' table, storing course information
 public class CourseEntity {
-    @PrimaryKey(autoGenerate = true) // localId là khoá chính, tự động tăng
-    public int localId; // ID tự động tăng trong SQLite, duy nhất cho mỗi bản ghi
+    @PrimaryKey(autoGenerate = true) // localId is primary key, auto increment
+    public int localId; // Auto increment ID in SQLite, unique for each record
 
 
-    public String firebaseId; // ID trên Firebase, null nếu chưa sync
+    public String firebaseId; // ID on Firebase, null if not synced yet
 
-    @androidx.room.ColumnInfo(name = "courseid") // Ánh xạ với cột 'courseid' trong bảng
-    public String courseId; // ID dùng chung cho local & cloud, thường = localId khi mới tạo
+    @androidx.room.ColumnInfo(name = "courseid") // Map to 'courseid' column in table
+    public String courseId; // Shared ID for local & cloud, usually = localId when newly created
 
-    // Thông tin khoá học
-    public String name; // Tên khoá học
-    public String schedule; // Lịch học (ví dụ: Monday,Tuesday)
-    public String time; // Giờ học (ví dụ: 08:00)
-    public String description; // Mô tả khoá học
-    public String note; // Ghi chú thêm
-    public String upcomingDate; // Ngày học tiếp theo (dùng cho hiển thị)
+    // Course information
+    public String name; // Course name
+    public String schedule; // Schedule (e.g.: Monday,Tuesday)
+    public String time; // Class time (e.g.: 08:00)
+    public String description; // Course description
+    public String note; // Additional notes
+    public String upcomingDate; // Next class date (for display)
 
-    public int capacity; // Số lượng tối đa học viên
-    public int duration; // Thời lượng buổi học (phút)
-    public double price; // Giá khoá học
-    public boolean isSynced; // Đã đồng bộ với Firebase chưa
+    public int capacity; // Maximum number of students
+    public int duration; // Class duration (minutes)
+    public double price; // Course price
+    public boolean isSynced; // Whether synced with Firebase
 
 
-    // Constructor mặc định (bắt buộc cho Room)
+    // Default constructor (required for Room)
     public CourseEntity() {}
 
-    // Constructor đầy đủ, dùng khi tạo mới hoặc mapping dữ liệu
+    // Full constructor, used when creating new or mapping data
     @Ignore
     public CourseEntity(int localId, String firebaseId, String courseId, String name, String schedule, String time, String description, String note, String upcomingDate, int capacity, int duration, double price, boolean isSynced) {
-        this.localId = localId; // ID local
-        this.firebaseId = firebaseId; // ID trên Firebase
-        this.courseId = courseId; // ID dùng chung
-        this.name = name; // Tên khoá học
-        this.schedule = schedule; // Lịch học
-        this.time = time; // Giờ học
-        this.description = description; // Mô tả
-        this.note = note; // Ghi chú
-        this.upcomingDate = upcomingDate; // Ngày học tiếp theo
-        this.capacity = capacity; // Sức chứa
-        this.duration = duration; // Thời lượng
-        this.price = price; // Giá
-        this.isSynced = isSynced; // Trạng thái đồng bộ
+        this.localId = localId; // Local ID
+        this.firebaseId = firebaseId; // Firebase ID
+        this.courseId = courseId; // Shared ID
+        this.name = name; // Course name
+        this.schedule = schedule; // Schedule
+        this.time = time; // Class time
+        this.description = description; // Description
+        this.note = note; // Notes
+        this.upcomingDate = upcomingDate; // Next class date
+        this.capacity = capacity; // Capacity
+        this.duration = duration; // Duration
+        this.price = price; // Price
+        this.isSynced = isSynced; // Sync status
     }
 
-    // Getter & Setter cho từng trường (bắt buộc cho Room và adapter)
+    // Getter & Setter for each field (required for Room and adapter)
     public String getCourseId() { return courseId; }
     public void setCourseId(String courseId) { this.courseId = courseId; }
 
