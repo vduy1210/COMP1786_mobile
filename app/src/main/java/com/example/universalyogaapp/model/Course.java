@@ -1,44 +1,44 @@
 
-// Model đại diện cho khoá học, dùng cho cả local và Firebase
+
 package com.example.universalyogaapp.model;
 
 
 public class Course {
-    private String id; // ID trên Firebase
-    private String courseId; // ID tự động tăng, đồng bộ với entity (dùng cho sync)
-    private String name; // Tên khoá học
-    private String schedule; // Lịch học (ví dụ: Mon, Wed, Fri - 18:00-19:00)
-    private int capacity; // Sức chứa tối đa
-    private double price; // Giá khoá học
-    private int duration; // Thời lượng buổi học (phút)
-    private String description; // Mô tả khoá học
-    private String note;     // Ghi chú thêm
-    private String time;     // Giờ học
-    private String upcomingDate; // Ngày học tiếp theo (tính toán)
-    private int localId; // ID local trong SQLite
+    private String id;
+    private String courseId;
+    private String name;
+    private String schedule;
+    private int capacity;
+    private double price;
+    private int duration;
+    private String description;
+    private String note;
+    private String time;
+    private String upcomingDate;
+    private int localId;
 
 
-    // Constructor rỗng (bắt buộc cho Firebase)
+
     public Course() {}
 
 
-    // Constructor đầy đủ, dùng khi tạo mới hoặc mapping dữ liệu
+
     public Course(String id, String name, String schedule, String time, int capacity, double price, int duration, String description, String note, String upcomingDate, int localId) {
-        this.id = id; // ID trên Firebase
-        this.name = name; // Tên khoá học
-        this.schedule = schedule; // Lịch học
-        this.time = time; // Giờ học
-        this.capacity = capacity; // Sức chứa
-        this.price = price; // Giá
-        this.duration = duration; // Thời lượng
-        this.description = description; // Mô tả
-        this.note = note; // Ghi chú
-        this.upcomingDate = upcomingDate; // Ngày học tiếp theo
+        this.id = id;
+        this.name = name;
+        this.schedule = schedule;
+        this.time = time;
+        this.capacity = capacity;
+        this.price = price;
+        this.duration = duration;
+        this.description = description;
+        this.note = note;
+        this.upcomingDate = upcomingDate;
         this.localId = localId; // ID local
     }
 
 
-    // Getter & Setter cho từng trường (bắt buộc cho Firebase, Room và adapter)
+    // Getter & Setter
     public String getCourseId() { return courseId; }
     public void setCourseId(String courseId) { this.courseId = courseId; }
 
